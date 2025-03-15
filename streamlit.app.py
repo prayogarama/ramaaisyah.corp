@@ -232,7 +232,7 @@ elif selected_nav == "Kontak":
             pendidikan = [
                 "SD Muhammadiyah 22 Surabaya",
                 "SMP Negeri 16 Surabaya",
-                "SMK Negeri 05 Surabaya",
+                "SMK Negeri 5 Surabaya",
                 "Universitas Muhammadiyah Surabaya"
             ]
             for sekolah in pendidikan:
