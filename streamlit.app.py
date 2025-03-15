@@ -94,7 +94,7 @@ if selected_nav == "Beranda":
         
         # Gambar perusahaan
         try:
-            image = Image.open("C:\\Users\\ramaprayoga\\Downloads\\corp.jpg")
+            image = Image.open("pic/corp.jpg")
             st.image(image, caption="Foto Perusahaan")
         except FileNotFoundError:
             st.error("Gambar perusahaan tidak ditemukan" if st.session_state.language == "Indonesia" else "Company image not found")
@@ -179,7 +179,7 @@ elif selected_nav == "Kontak":
     with col1:
         with st.expander("Rama Prayoga"):
             try:
-                image = Image.open("C:\\Users\\ramaprayoga\\Downloads\\rama.jpg")
+                image = Image.open("pic/rama.jpg")
                 st.image(image, width=200)
             except FileNotFoundError:
                 st.error("Gambar tidak ditemukan" if st.session_state.language == "Indonesia" else "Image not found")
@@ -217,7 +217,7 @@ elif selected_nav == "Kontak":
     with col2:
         with st.expander("Aisyah Rahma"):
             try:
-                image = Image.open("C:\\Users\\ramaprayoga\\Downloads\\aisyah.jpg")
+                image = Image.open("pic/aisyah.jpg")
                 st.image(image, width=200)
             except FileNotFoundError:
                 st.error("Gambar tidak ditemukan" if st.session_state.language == "Indonesia" else "Image not found")
