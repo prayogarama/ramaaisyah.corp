@@ -1,7 +1,45 @@
 import streamlit as st
 from PIL import Image
 import pandas as pd
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime
 
+# Fungsi untuk mengirim email
+def send_email(data):
+    sender_email = "your_email@gmail.com"  # Ganti dengan email pengirim
+    receiver_email = "ramayoga26@sma.belajar.id"  # Email penerima
+    password = "your_email_password"  # Ganti dengan password email pengirim
+
+    # Membuat pesan email
+    subject = "Formulir Pendaftaran Baru"
+    body = f"""
+    Data Pendaftaran:
+    - Nama: {data['nama']}
+    - Usia: {data['usia']}
+    - Jenis Lamaran: {data['jenis_lamaran']}
+    - Posisi: {data['posisi']}
+    - Perusahaan: {', '.join(data['perusahaan'])}
+    - Tanggal Lahir: {data['tanggal_lahir']}
+    - Setuju Syarat dan Ketentuan: {data['setuju']}
+    """
+
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = subject
+    message.attach(MIMEText(body, "plain"))
+
+    # Mengirim email
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        st.success("Formulir berhasil dikirim! Kami akan menghubungi Anda segera.")
+    except Exception as e:
+        st.error(f"Gagal mengirim email: {e}")
 # Session state untuk menyimpan preferensi
 if 'font_size' not in st.session_state:
     st.session_state.font_size = 15
@@ -63,7 +101,7 @@ st.markdown(
 # Sidebar untuk navigasi dan toggle tema
 with st.sidebar:
     st.header("Navigasi")
-    nav_options = ["Beranda", "Kontak", "Pengaturan"]
+    nav_options = ["Beranda", "Kontak", "Join!", "Pengaturan"]
     selected_nav = st.radio("Pilih Halaman:", nav_options)
 
     # Toggle tema di sidebar
@@ -94,7 +132,7 @@ if selected_nav == "Beranda":
         
         # Gambar perusahaan
         try:
-            image = Image.open("pic/corp.jpg")
+            image = Image.open("C:\\Users\\ramaprayoga\\Downloads\\corp.jpg")
             st.image(image, caption="Foto Perusahaan")
         except FileNotFoundError:
             st.error("Gambar perusahaan tidak ditemukan" if st.session_state.language == "Indonesia" else "Company image not found")
@@ -179,7 +217,7 @@ elif selected_nav == "Kontak":
     with col1:
         with st.expander("Rama Prayoga"):
             try:
-                image = Image.open("pic/rama.jpg")
+                image = Image.open("C:\\Users\\ramaprayoga\\Downloads\\rama.jpg")
                 st.image(image, width=200)
             except FileNotFoundError:
                 st.error("Gambar tidak ditemukan" if st.session_state.language == "Indonesia" else "Image not found")
@@ -217,7 +255,7 @@ elif selected_nav == "Kontak":
     with col2:
         with st.expander("Aisyah Rahma"):
             try:
-                image = Image.open("pic/aisyah.jpg")
+                image = Image.open("C:\\Users\\ramaprayoga\\Downloads\\aisyah.jpg")
                 st.image(image, width=200)
             except FileNotFoundError:
                 st.error("Gambar tidak ditemukan" if st.session_state.language == "Indonesia" else "Image not found")
@@ -232,7 +270,7 @@ elif selected_nav == "Kontak":
             pendidikan = [
                 "SD Muhammadiyah 22 Surabaya",
                 "SMP Negeri 16 Surabaya",
-                "SMK Negeri 5 Surabaya",
+                "SMK Negeri 05 Surabaya",
                 "Universitas Muhammadiyah Surabaya"
             ]
             for sekolah in pendidikan:
@@ -252,6 +290,54 @@ elif selected_nav == "Kontak":
                 </p>
             """, unsafe_allow_html=True)
 
+# Halaman Join!
+elif selected_nav == "Join!":
+    st.header("Formulir Pendaftaran")
+    with st.form("form_pendaftaran"):
+        st.write("Silakan isi formulir berikut:")
+        
+        # Input Nama
+        nama = st.text_input("Nama Lengkap")
+        
+        # Input Usia
+        usia = st.number_input("Usia", min_value=1, max_value=100)
+        
+        # Radio Button untuk Jenis Lamaran
+        jenis_lamaran = st.radio("Jenis Lamaran", ["Pekerja", "Magang"])
+        
+        # Selectbox untuk Posisi
+        posisi = st.selectbox("Posisi yang Dilamar", ["Developer", "Designer", "Data Analyst", "Marketing"])
+        
+        # Multiselect untuk Perusahaan
+        perusahaan = st.multiselect("Perusahaan yang Diinginkan", ["Perusahaan A", "Perusahaan B", "Perusahaan C"])
+        
+        # Slider untuk Usia
+        st.write("Usia Pelamar:")
+        usia_slider = st.slider("Pilih Usia", 18, 65, 25)
+        
+        # Date Input untuk Tanggal Lahir
+        tanggal_lahir = st.date_input("Tanggal Lahir", max_value=datetime.today())
+        
+        # Checkbox untuk Syarat dan Ketentuan
+        setuju = st.checkbox("Saya menyetujui syarat dan ketentuan yang berlaku")
+        
+        # Tombol Submit
+        submitted = st.form_submit_button("Kirim Formulir")
+        
+        if submitted:
+            if not nama or not perusahaan or not setuju:
+                st.warning("Harap lengkapi semua field dan setujui syarat dan ketentuan.")
+            else:
+                data = {
+                    "nama": nama,
+                    "usia": usia,
+                    "jenis_lamaran": jenis_lamaran,
+                    "posisi": posisi,
+                    "perusahaan": perusahaan,
+                    "tanggal_lahir": tanggal_lahir,
+                    "setuju": setuju
+                }
+                send_email(data)
 # Halaman Pengaturan
 elif selected_nav == "Pengaturan":
     settings_header = "Pengaturan" if st.session_state.language == "Indonesia" else "Settings"
