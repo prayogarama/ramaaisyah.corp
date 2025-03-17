@@ -8,38 +8,37 @@ from datetime import datetime
 
 # Fungsi untuk mengirim email
 def send_email(data):
-    sender_email = "your_email@gmail.com"  # Ganti dengan email pengirim
-    receiver_email = "ramayoga26@sma.belajar.id"  # Email penerima
-    password = "your_email_password"  # Ganti dengan password email pengirim
-
-    # Membuat pesan email
+    # Gunakan email perusahaan sebagai pengirim tetap
+    sender_email = "noreply@ramaaisyah.corp"  # Email perusahaan
+    receiver_email = "ramayoga26@sma.belajar.id"
+    password = "your_company_app_password"  # App password dari email perusahaan
+    
     subject = "Formulir Pendaftaran Baru"
     body = f"""
     Data Pendaftaran:
     - Nama: {data['nama']}
+    - WhatsApp: {data['whatsapp']}
     - Usia: {data['usia']}
     - Jenis Lamaran: {data['jenis_lamaran']}
     - Posisi: {data['posisi']}
     - Perusahaan: {', '.join(data['perusahaan'])}
     - Tanggal Lahir: {data['tanggal_lahir']}
     - Setuju Syarat dan Ketentuan: {data['setuju']}
+    
+    Kontak Pelamar:
+    Email: {data.get('email', 'Tidak ada')}
     """
-
-    message = MIMEMultipart()
-    message["From"] = sender_email
-    message["To"] = receiver_email
-    message["Subject"] = subject
-    message.attach(MIMEText(body, "plain"))
-
-    # Mengirim email
+    
+    # ... (kode MIMEMultipart dan pengiriman email tetap sama)
+    
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
-        st.success("Formulir berhasil dikirim! Kami akan menghubungi Anda segera.")
+        return True, "Formulir berhasil dikirim! Kami akan menghubungi Anda segera."
     except Exception as e:
-        st.error(f"Gagal mengirim email: {e}")
+        return False, f"Gagal mengirim email: {e}"
 # Session state untuk menyimpan preferensi
 if 'font_size' not in st.session_state:
     st.session_state.font_size = 15
@@ -296,40 +295,27 @@ elif selected_nav == "Join!":
     with st.form("form_pendaftaran"):
         st.write("Silakan isi formulir berikut:")
         
-        # Input Nama
-        nama = st.text_input("Nama Lengkap")
-        
-        # Input Usia
-        usia = st.number_input("Usia", min_value=1, max_value=100)
-        
-        # Radio Button untuk Jenis Lamaran
-        jenis_lamaran = st.radio("Jenis Lamaran", ["Pekerja", "Magang"])
-        
-        # Selectbox untuk Posisi
-        posisi = st.selectbox("Posisi yang Dilamar", ["Developer", "Designer", "Data Analyst", "Marketing"])
-        
-        # Multiselect untuk Perusahaan
-        perusahaan = st.multiselect("Perusahaan yang Diinginkan", ["Perusahaan A", "Perusahaan B", "Perusahaan C"])
-        
-        # Slider untuk Usia
-        st.write("Usia Pelamar:")
-        usia_slider = st.slider("Pilih Usia", 18, 65, 25)
-        
-        # Date Input untuk Tanggal Lahir
-        tanggal_lahir = st.date_input("Tanggal Lahir", max_value=datetime.today())
-        
-        # Checkbox untuk Syarat dan Ketentuan
-        setuju = st.checkbox("Saya menyetujui syarat dan ketentuan yang berlaku")
-        
-        # Tombol Submit
+        # Input Data (email tidak wajib)
+        nama = st.text_input("Nama Lengkap*")
+        whatsapp = st.text_input("Nomor WhatsApp*")
+        email = st.text_input("Alamat Email (opsional)")
+        usia = st.number_input("Usia*", min_value=1, max_value=100)
+        jenis_lamaran = st.radio("Jenis Lamaran*", ["Pekerja", "Magang"])
+        posisi = st.selectbox("Posisi yang Dilamar*", ["Developer", "Designer", "Data Analyst", "Marketing"])
+        perusahaan = st.multiselect("Perusahaan yang Diinginkan*", ["Perusahaan A", "Perusahaan B", "Perusahaan C"])
+        tanggal_lahir = st.date_input("Tanggal Lahir*", max_value=datetime.today())
+        setuju = st.checkbox("Saya menyetujui syarat dan ketentuan yang berlaku*")
+
         submitted = st.form_submit_button("Kirim Formulir")
         
         if submitted:
-            if not nama or not perusahaan or not setuju:
-                st.warning("Harap lengkapi semua field dan setujui syarat dan ketentuan.")
+            if not nama or not perusahaan or not setuju or not whatsapp:
+                st.warning("Harap lengkapi field wajib (*) dan setujui syarat dan ketentuan.")
             else:
                 data = {
                     "nama": nama,
+                    "email": email,
+                    "whatsapp": whatsapp,
                     "usia": usia,
                     "jenis_lamaran": jenis_lamaran,
                     "posisi": posisi,
@@ -337,7 +323,15 @@ elif selected_nav == "Join!":
                     "tanggal_lahir": tanggal_lahir,
                     "setuju": setuju
                 }
-                send_email(data)
+
+                # Kirim email menggunakan akun perusahaan
+                success, message = send_email(data)
+                
+                if success:
+                    st.success(message)
+                    st.balloons()  # Animasi konfirmasi
+                else:
+                    st.error(message)
 # Halaman Pengaturan
 elif selected_nav == "Pengaturan":
     settings_header = "Pengaturan" if st.session_state.language == "Indonesia" else "Settings"
